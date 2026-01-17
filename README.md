@@ -1,6 +1,8 @@
 ### Node (v22.6.0)
 
-```
+Each message runs in a separate task (draining microtasks in between). They're also uninterrupted, although this is an implementation detail and not guaranteed by the spec.
+
+```terminal
 $ node --experimental-strip-types src/run-test.ts
 microtask 1
 message 1
@@ -15,7 +17,7 @@ timeout 1
 
 Same as Node:
 
-```
+```terminal
 $ bun src/run-test.ts
 microtask 1
 message 1
@@ -28,13 +30,8 @@ timeout 1
 
 ### Workerd (wrangler 4.59.2 + nodejs_compat_v2)
 
-```
-pnpm dev
-```
-
-and
-
-```
+```terminal
+$ # wirh `pnpm dev` in a separate tab
 $ curl http://localhost:8787
 message 1
 message 2
@@ -45,13 +42,14 @@ timeout 1
 immediate 1
 ```
 
-see comment in [src/test.ts](src/test.ts) for more about the ordering
+Here, messages don't spawn new tasks at all, they're processed synchronously (without draining microtasks in between).
+This obviously makes `MessagePort` unusable as a method of scheduling sequential tasks.
 
 ### Deno (2.6.6)
 
-Weirdly, Deno seems to execute the first message synchronously (although i'm not sure what's actually happening here):
+Weirdly, Deno seems to execute the first message synchronously (ot at least that appears to be what's actually happening here):
 
-```
+```terminal
 $ deno --allow-env src/run-test.ts
 message 1
 microtask 1
@@ -65,7 +63,7 @@ timeout 1
 However, if we queue the messages (and attach the listener) in a microtask, the ordering is close to what we'd expect in node/bun.
 The immediate runs before the messages, but we can live with that as long as they're uninterrupted (although we haven't proven that they are)
 
-```
+```terminal
 $ POSTMESSAGE_IN_MICROTASK=1 deno --allow-env src/run-test.ts
 microtask 1
 immediate 1
