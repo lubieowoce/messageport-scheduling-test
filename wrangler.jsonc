@@ -7,9 +7,10 @@
 	"name": "workerd-sandbox",
 	"main": "src/index.ts",
 	"compatibility_date": "2025-09-27",
+	"compatibility_flags": ["nodejs_compat_v2"],
 	"observability": {
-		"enabled": true
-	}
+		"enabled": true,
+	},
 	/**
 	 * Smart Placement
 	 * https://developers.cloudflare.com/workers/configuration/smart-placement/#smart-placement
