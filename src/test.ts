@@ -20,6 +20,10 @@
 //
 // (the immediate is going to be ordered differently on workerd, because it's just `setTimeout(..., 0)`)
 
+function callSync<T>(cb: () => T): T {
+	return cb();
+}
+
 export async function testMessagePort() {
 	const logs: string[] = [];
 	const log = (msg: string) => {
@@ -32,28 +36,27 @@ export async function testMessagePort() {
 	setTimeout(() => {
 		const { port1: sendPort, port2: receivePort } = new MessageChannel();
 		// queue two messages on a messageport
+		// NOTE: in deno, we need to do this in a microtask, otherwise message 1 seems to run synchronously
 		let pendingMessages = 0;
-		sendPort.postMessage('1');
-		pendingMessages++;
-		sendPort.postMessage('2');
-		pendingMessages++;
-
-		// attach a listener only after the messages are queued
-		receivePort.onmessage = (event: MessageEvent) => {
-			pendingMessages--;
-			const id = (event as MessageEvent).data;
-			log(`message ${id}`);
-			queueMicrotask(() => {
-				log(`message ${id} - microtask`);
-				if (pendingMessages === 0) {
-					done[2].resolve();
-				}
-			});
-		};
-		// in node, we have to unref the messageport, otherwise it'll prevent exit
-		if ('unref' in receivePort && typeof receivePort.unref === 'function') {
-			receivePort.unref();
-		}
+		(process.env.POSTMESSAGE_IN_MICROTASK ? queueMicrotask : callSync)(() => {
+			sendPort.postMessage('1');
+			pendingMessages++;
+			sendPort.postMessage('2');
+			pendingMessages++;
+			// attach a listener only after the messages are queued
+			receivePort.onmessage = (event: MessageEvent) => {
+				pendingMessages--;
+				const id = (event as MessageEvent).data;
+				log(`message ${id}`);
+				queueMicrotask(() => {
+					log(`message ${id} - microtask`);
+					if (pendingMessages === 0) {
+						done[2].resolve();
+						receivePort.close();
+					}
+				});
+			};
+		});
 
 		queueMicrotask(() => {
 			log('microtask 1');
