@@ -80,23 +80,23 @@ Running this in a browser REPL:
 
 ```
 void setTimeout(() => {
-	const { port1: sendPort, port2: receivePort } = new MessageChannel();
-	sendPort.postMessage('1');
-	sendPort.postMessage('2');
-	receivePort.onmessage = (event) => {
-		const id = event.data;
-		console.log(`message ${id}`);
-		queueMicrotask(() => {
-			console.log(`message ${id} - microtask`);
-		});
-	};
+  const { port1: sendPort, port2: receivePort } = new MessageChannel();
+  sendPort.postMessage('1');
+  sendPort.postMessage('2');
+  receivePort.onmessage = (event) => {
+    const id = event.data;
+    console.log(`message ${id}`);
+    queueMicrotask(() => {
+      console.log(`message ${id} - microtask`);
+    });
+  };
 
-	queueMicrotask(() => {
-		console.log('microtask 1');
-	});
-	setTimeout(() => {
-		console.log('timeout 1');
-	});
+  queueMicrotask(() => {
+    console.log('microtask 1');
+  });
+  setTimeout(() => {
+    console.log('timeout 1');
+  });
 });
 ```
 
