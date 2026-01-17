@@ -1,4 +1,4 @@
-### Node
+### Node (v22.6.0)
 
 ```
 $ node --experimental-strip-types src/run-test.ts
@@ -11,7 +11,9 @@ immediate 1
 timeout 1
 ```
 
-### Bun (same as node)
+### Bun (1.1.34)
+
+Same as Node:
 
 ```
 $ bun src/run-test.ts
@@ -24,7 +26,7 @@ immediate 1
 timeout 1
 ```
 
-### Workerd
+### Workerd (wrangler 4.59.2 + nodejs_compat_v2)
 
 ```
 pnpm dev
@@ -45,7 +47,7 @@ immediate 1
 
 see comment in [src/test.ts](src/test.ts) for more about the ordering
 
-### Deno
+### Deno (2.6.6)
 
 Weirdly, Deno seems to execute the first message synchronously (although i'm not sure what's actually happening here):
 
