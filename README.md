@@ -2,7 +2,7 @@
 
 Each message runs in a separate task (draining microtasks in between). They're also uninterrupted, although this is an implementation detail and not guaranteed by the spec.
 
-```terminal
+```shell
 $ node --experimental-strip-types src/run-test.ts
 microtask 1
 message 1
@@ -17,7 +17,7 @@ timeout 1
 
 Same as Node:
 
-```terminal
+```shell
 $ bun src/run-test.ts
 microtask 1
 message 1
@@ -30,8 +30,8 @@ timeout 1
 
 ### Workerd (wrangler 4.59.2 + nodejs_compat_v2)
 
-```terminal
-$ # wirh `pnpm dev` in a separate tab
+```shell
+$ # with `pnpm dev` in a separate tab
 $ curl http://localhost:8787
 message 1
 message 2
@@ -49,7 +49,7 @@ This obviously makes `MessagePort` unusable as a method of scheduling sequential
 
 Weirdly, Deno seems to execute the first message synchronously (ot at least that appears to be what's actually happening here):
 
-```terminal
+```shell
 $ deno --allow-env src/run-test.ts
 message 1
 microtask 1
@@ -63,7 +63,7 @@ timeout 1
 However, if we queue the messages (and attach the listener) in a microtask, the ordering is close to what we'd expect in node/bun.
 The immediate runs before the messages, but we can live with that as long as they're uninterrupted (although we haven't proven that they are)
 
-```terminal
+```shell
 $ POSTMESSAGE_IN_MICROTASK=1 deno --allow-env src/run-test.ts
 microtask 1
 immediate 1
@@ -78,25 +78,25 @@ timeout 1
 
 Running this in a browser REPL:
 
-```
+```js
 void setTimeout(() => {
-  const { port1: sendPort, port2: receivePort } = new MessageChannel();
-  sendPort.postMessage('1');
-  sendPort.postMessage('2');
-  receivePort.onmessage = (event) => {
-    const id = event.data;
-    console.log(`message ${id}`);
-    queueMicrotask(() => {
-      console.log(`message ${id} - microtask`);
-    });
-  };
+	const { port1: sendPort, port2: receivePort } = new MessageChannel();
+	sendPort.postMessage('1');
+	sendPort.postMessage('2');
+	receivePort.onmessage = (event) => {
+		const id = event.data;
+		console.log(`message ${id}`);
+		queueMicrotask(() => {
+			console.log(`message ${id} - microtask`);
+		});
+	};
 
-  queueMicrotask(() => {
-    console.log('microtask 1');
-  });
-  setTimeout(() => {
-    console.log('timeout 1');
-  });
+	queueMicrotask(() => {
+		console.log('microtask 1');
+	});
+	setTimeout(() => {
+		console.log('timeout 1');
+	});
 });
 ```
 
